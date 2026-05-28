@@ -2,8 +2,6 @@
 Hello people, this is a repository in which i would share how i implemented my home server with all the explaination and config files.
 Please feel free to add any suggestions by sending a pull request to make it better or if you have any questions please open an issue. 
 
-# Homelab Server
-
 Personal Raspberry Pi based homelab/server setup built around Docker, self-hosting, remote access, automation, and backups.
 
 ---
