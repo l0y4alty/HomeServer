@@ -99,13 +99,153 @@ the main services i've built so far are:
 
 # Network Configuration
 
-Contains:
 
-* router configuration
-* DHCP reservations
-* port forwarding
-* local network setup
-* Wi-Fi/Ethernet configuration
+This document covers the current network setup of my homelab, the decisions I made while building it, and some of the issues I ran into along the way.
+
+The goal was to build a network that is easy to manage, secure enough for remote access, and flexible enough to support future services without constantly reworking the infrastructure.
+
+Current topology:
+
+```text
+Internet
+    │
+    ▼
+TIM Router
+(192.168.1.1)
+    │
+    ▼
+Network Switch
+    │
+    ▼
+Raspberry Pi Server
+(192.168.1.61)
+    │
+    ├── Docker
+    ├── SSH
+    ├── SMB
+    ├── Plex
+    ├── Duplicati
+    └── Tailscale
+```
+
+## LAN Connectivity
+
+The Raspberry Pi is currently connected through Ethernet.
+
+When I first started building the server it was running over Wi-Fi because it was easier during the initial setup. It worked, but it also caused a few headaches when troubleshooting connectivity issues and figuring out why services were suddenly unreachable.
+
+After rearranging the cabling and moving the server to a wired connection, things became much more predictable. Since then, file transfers, media streaming, backups and remote management have all been noticeably more reliable.
+
+Current path:
+
+```text
+Raspberry Pi
+    │
+Ethernet
+    │
+Network Switch
+    │
+TIM Router
+```
+
+## IP Addressing and DHCP
+
+The local network uses the standard private subnet:
+
+```text
+192.168.1.0/24
+```
+
+The router is available at:
+
+```text
+192.168.1.1
+```
+
+and the Raspberry Pi currently lives at:
+
+```text
+192.168.1.61
+```
+
+One of the first problems I encountered was caused by DHCP assigning a different address than the one I expected. I spent some time troubleshooting SSH before realizing that the server had simply obtained a new IP address.
+
+To avoid this happening again, I configured a DHCP reservation on the router. The Raspberry Pi still uses DHCP, but it always receives the same address.
+
+This makes service management much easier, especially for SSH, SMB shares, Docker services and any future infrastructure that relies on stable internal addressing.
+
+## Remote Access
+
+Originally I planned to deploy a traditional WireGuard server.
+
+The more I looked into it, the more I realized it would require additional work such as:
+
+- Port forwarding
+- Dynamic DNS
+- Managing public endpoints
+- Manual client configuration
+
+None of these are particularly difficult, but they add complexity that I didn't really need for a small homelab.
+
+I eventually switched to Tailscale, which uses WireGuard under the hood while handling most of the annoying parts automatically.
+
+This ended up being one of the best decisions in the project so far. Remote access became almost effortless and I no longer had to expose management services directly to the Internet.
+
+Tailscale is currently installed on all devices that require access to the homelab, allowing me to securely connect to the server from anywhere while keeping everything behind a private mesh VPN.
+
+## Firewall and Port Exposure
+
+One of the main design goals of the homelab is keeping the attack surface as small as possible.
+
+The router firewall remains enabled and, whenever possible, services are accessed through Tailscale instead of being exposed publicly.
+
+Most administrative interfaces are intentionally kept private, including:
+
+- SSH
+- SMB shares
+- Docker management interfaces
+- Internal service dashboards
+
+This means I can still access everything remotely, but without opening unnecessary ports to the Internet.
+
+The general rule I follow is:
+
+```text
+If Tailscale can do it,
+don't expose it publicly.
+```
+
+For the few services that require external access, port forwarding is configured directly on the router. Any exposed ports are documented together with the service that requires them so they can be audited and managed easily.
+
+## SSH
+
+SSH is the primary method used to administer the server.
+
+Typical connection:
+
+```bash
+ssh loyalty@192.168.1.61
+```
+
+SSH is available both from the local network and through Tailscale, allowing secure remote administration without exposing port 22 to the public Internet.
+
+One of the first networking issues I encountered involved failed SSH connections. At first I assumed SSH itself was misconfigured, but after some troubleshooting I discovered that the Raspberry Pi had simply received a different IP address through DHCP.
+
+After implementing DHCP reservations, SSH access became consistent and reliable.
+
+## Lessons Learned
+
+Building the network infrastructure for this homelab taught me a few valuable lessons.
+
+The first is that even in a small environment, proper IP management matters. DHCP reservations can save a surprising amount of troubleshooting time.
+
+The second is that Ethernet is absolutely worth the effort. While Wi-Fi is convenient for testing and initial deployment, a wired connection provides the reliability that self-hosted services really need.
+
+The third lesson is that simplicity often beats complexity. While deploying a standalone WireGuard server would have been a great learning experience, Tailscale allowed me to achieve the same goal with significantly less maintenance and configuration overhead.
+
+Finally, I've learned that exposing fewer services publicly makes everything easier. Keeping management interfaces behind a VPN dramatically reduces the security concerns that come with running services from home.
+
+
 
 ---
 
@@ -142,18 +282,6 @@ Detailed configuration files and explanations for every hosted service.
 # Tailscale
 
 ---
-
-# SSH Configuration
-
-Contains:
-
-* SSH hardening
-* key authentication
-* remote management
-* troubleshooting
-
----
-
 # Storage & NAS
 
 Documentation for:
@@ -224,14 +352,20 @@ Collection of common issues and fixes encountered during setup and maintenance.
 
 # Future Improvements
 
-Planned additions:
+As the homelab grows, the networking stack will continue to evolve.
 
-* reverse proxy
-* HTTPS
-* cloud backups
-* monitoring dashboards
-* UPS integration
-* RAID/NAS expansion
+Planned improvements include:
+
+- Reverse proxy deployment
+- Internal DNS resolution
+- HTTPS termination
+- Domain-based service routing
+- VLAN segmentation
+- Network monitoring
+- Intrusion detection and prevention
+- Self-hosted mail infrastructure
+
+These additions will be documented as they are implemented.
 
 ---
 
