@@ -518,26 +518,6 @@ The SMB shares are accessible both from the local network and remotely through T
 
 ---
 
-## Permissions Management
-
-Ownership of the storage directory is assigned to the primary server user:
-
-```bash
-sudo chown -R loyalty:loyalty /mnt/SERVERDATA
-```
-
-Docker containers use matching PUID and PGID values to ensure proper access permissions:
-
-```yaml
-environment:
-  - PUID=1000
-  - PGID=1000
-```
-
-This prevents permission conflicts between the host operating system and containers.
-
----
-
 ## Why This Structure?
 
 The storage layout was designed with a few goals in mind:
