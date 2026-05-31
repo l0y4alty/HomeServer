@@ -558,7 +558,6 @@ For config files examples see docker compose files
 
 ---
 
-# Security
 
 # Security
 
