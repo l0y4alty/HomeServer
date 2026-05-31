@@ -15,15 +15,7 @@ Personal Raspberry Pi based homelab/server setup built around Docker, self-hosti
 * [Docker Setup](#docker-setup)
 * [Directory Structure](#directory-structure)
 * [Services](#services)
-* [Tailscale](#Tailscale)
-* [SSH Configuration](#ssh-configuration)
-* [Storage & NAS](#storage--nas)
-* [Backups](#backups)
-* [Home Assistant](#home-assistant)
-* [Plex Media Server](#plex-media-server)
 * [Security](#security)
-* [Monitoring & Maintenance](#monitoring--maintenance)
-* [Troubleshooting](#troubleshooting)
 * [Future Improvements](#future-improvements)
 
 ---
@@ -42,58 +34,143 @@ The project focuses on:
 * home integration
 * media services
 
-Each component is documented separately inside its dedicated folder and markdown file.
-
 ---
 
 # Hardware
 
-To build my homme server i needed something relatively cheap,(cuz i'm broke not stingy lol), small, that would make too much noise since it's gonna be in my room, and not too much electricity consuming.
-But i didn't want to renounce quality, and reliabilty so i came up with a good compromise. 
-For my hardware i choose a Raspberry pi 5 with 16 gb of ram, because i thought 8 we're not enough since i needed it to run multiple services and even though maybe 8 gigs could've done the job, i wanted toi have a big margin so that in the long term the hardwware would preserve better and prevent much heat and possible bottlenecks. 
-Specs and docs of raspberry pi 5 here: https://pip-assets.raspberrypi.com/categories/892-raspberry-pi-5/documents/RP-008348-DS-6-raspberry-pi-5-product-brief.pdf 
+To build my home server, I needed something relatively cheap (because I'm broke, not stingy 😄), compact, quiet enough to stay in my bedroom, and reasonably power efficient.
 
--For the case, i wanted something functional but also ahestetic, so after some research i found the perfect option: The pironman 5 max 
+At the same time, I didn't want to sacrifice reliability or overall quality, so I tried to find a good compromise between performance, cost, and usability.
+
+For the main hardware, I chose a Raspberry Pi 5 with 16 GB of RAM. While 8 GB would probably have been enough for my current workload, I wanted some extra headroom for future services and long-term scalability.
+
+Having more available memory allows me to run multiple services simultaneously without worrying too much about bottlenecks, and it gives me more flexibility as the project grows.
+
+Raspberry Pi 5 specifications:
+
+https://pip-assets.raspberrypi.com/categories/892-raspberry-pi-5/documents/RP-008348-DS-6-raspberry-pi-5-product-brief.pdf
+
+---
+
+## Case
+
+For the case, I wanted something that was both functional and aesthetically pleasing.
+
+After some research, I found what I considered the perfect option: the **Pironman 5 Max**.
+
+Documentation:
 
 https://docs.sunfounder.com/projects/pironman5/en/latest/pironman5_max/intro_pironman5_max.html
 
-I choose the pironman 5 max for 3 main reasons: 
-1) it's very ahesthetic, with it's colours and rgb fans and it's little built in screen
-2) It has 2 nvme slots,which makes it very easy to fit a decent amount of storage, and also a lot of i/o ports, like usb-c's, ethernet. usb-a's, hdmi and more
-3) It has multiple fans, which can dissipate heat very easily, and if configured correctly, they don't make any kind of noise.
+I chose the Pironman 5 Max for three main reasons:
 
--For the storage i choose 2 nvme ssd's
-the first one is 1tb in which resides the os and all the configurations and also all of the docker containers for all the services i needed.
-the second one is a crucial 2TB nvme, in which are gonna be stored all of the various data such as: photo's,backups,databases and more. 
-most people are gonna say that only having the possibilty to use just nvme ssd's is gonna be a big limit for upgrades also moneywise.
-but this server is meant to be personal,educational,for pure curiosity, and not for many users or big services.
-So in the future if i will ever need to expand my server or maybe have one more professional, i think the best option is to stick to mechanical hard drives for storage and ssd's for the OS.
-(Both of the ssd's had been formatted in exFat since i use both windows and linux based devices in my daily use, so i needed a universally file system for storing data and for samba to share them)
--As a power supply i choose the one reccomended by the pironman producers, which is not gonna be the classic one but it needs a little bit more wattage since it needs to power one more stuff than just the pi
+1. **Design and aesthetics**  
+   It looks fantastic, featuring RGB fans, a built-in display, and a design that makes the Raspberry Pi feel like a miniature desktop server.
+
+2. **Storage and expandability**  
+   It includes two NVMe slots, making it easy to install a decent amount of storage while keeping everything compact. It also offers plenty of I/O, including USB-C, USB-A, HDMI, and Gigabit Ethernet.
+
+3. **Cooling performance**  
+   The multiple integrated fans provide excellent cooling. When properly configured, they keep temperatures under control while remaining virtually silent.
+
+---
+
+## Storage
+
+For storage, I chose two NVMe SSDs.
+
+### Primary Drive
+
+The first SSD is a 1 TB NVMe drive and contains:
+
+- Raspberry Pi OS
+- Docker containers
+- Service configurations
+- Application data
+
+### Secondary Drive
+
+The second SSD is a 2 TB Crucial NVMe drive and is dedicated to storing:
+
+- Photos
+- Backups
+- Databases
+- Media files
+- General user data
+
+Many people would argue that being limited to NVMe storage is not ideal for future upgrades, especially from a cost-per-terabyte perspective.
+
+However, this server was built as a personal learning project rather than a production environment. It is intended for self-hosting, experimentation, and education rather than serving many users or running large-scale services.
+
+If I ever outgrow this setup and move to a more professional server, I would most likely use:
+
+- SSDs for the operating system and containers
+- Mechanical hard drives for mass storage
+
+Both SSDs were originally formatted using exFAT because I regularly work across both Windows and Linux systems and wanted a filesystem that would be easy to access from either platform.
+
+---
+
+## Power Supply
+
+For power delivery, I chose the power supply recommended by the Pironman manufacturer.
+
+The Pironman includes additional hardware compared to a standard Raspberry Pi setup, so it requires slightly more power than the official Raspberry Pi power supply alone would normally provide.
+
+Using the recommended PSU ensures stable operation, especially when using NVMe drives, cooling fans, and USB peripherals simultaneously.
 
 ---
 
 # Software Stack
-For the operating system there is a ton you can choose, one big requisite is that is doesn't have to be have if you need performance.
-for example most of people choose operating system without a GUI because they never gonna use directly they are just gonna ssh into it.
-Personally i do also ssh most of the time, but sometimes when i mess up something i open my closet and there is a big ass 24 inch samsung screen to control it directly as it gives me a slightly bigger sense of control in sitauition of panick. 
-but one thing i knew for sure was that i wanted a linux based server because it gives you more freedom of costumization and full control over your hardware. 
-So my final choice was a classic Raspberry pi OS.
-it was my choice also because i didn't have a specific plan for my server when i started building it, but i knew i was gonna be multipurpose.
-so OS like OpenMediaVault or trueNas i knew they we're a no-go since this was not gonna be just a nas.  
 
-ok now i have my hardware ready, my os, but how tf should i host all of my services in just one server?
-of course the only choice here was to use docker and built a container for each service.
-i'm gonna explain more to it's configuration in other sections.
-the main services i've built so far are: 
-- printer server with CUPS
-- docker and portainer to manage all containers
-- nextcloud for storage
-- homeassistant and homebridge to control my smarthome and migrate it to apple homekit, with the use of an ESP32 also
-- samba for file sharing between winddows and linux
-- plex for media streaming, although i might switch to jellyfin soon
-- duplicati for data backup
-- tailscale to access the server even when not at home 
+There are many operating systems available for home servers, but one important requirement was that it should remain lightweight and efficient.
+
+Many people choose operating systems without a graphical interface because they rarely interact with the machine directly and instead manage everything through SSH.
+
+I also use SSH for most administrative tasks, but occasionally I break something and need direct access to the machine. In those situations, I simply open my closet, where I have a 24-inch Samsung monitor connected to the Raspberry Pi.
+
+Being able to interact directly with the system gives me a little more confidence when troubleshooting problems or recovering from mistakes.
+
+One thing I knew from the start was that I wanted a Linux-based operating system. Linux provides a high degree of customization, flexibility, and control over the hardware.
+
+For those reasons, I ultimately chose **Raspberry Pi OS**.
+
+Another reason for this choice was that I didn't have a precise plan for the server when I started building it. I only knew that it would be multipurpose.
+
+Because of that, more specialized operating systems such as OpenMediaVault or TrueNAS were not ideal for my use case. While both are excellent solutions, this project was never intended to be just a NAS.
+
+---
+
+## Containerization
+
+Once I had the hardware and operating system ready, the next question was:
+
+**How do I host multiple services on a single machine while keeping everything organized?**
+
+The obvious answer was Docker.
+
+Docker allows each service to run inside its own isolated container, making deployment, updates, troubleshooting, and maintenance significantly easier.
+
+I will cover the Docker configuration in more detail in later sections.
+
+---
+
+## Current Services
+
+The services currently running on the server include:
+
+- **CUPS** — Printer server
+- **Docker & Portainer** — Container management
+- **Nextcloud** — Personal cloud storage
+- **Home Assistant** — Smart home automation
+- **Homebridge** — Apple HomeKit integration
+- **ESP32 devices** — Custom smart home integrations
+- **Samba (SMB)** — File sharing between Windows and Linux systems
+- **Plex** — Media streaming platform
+- **Duplicati** — Backup management
+- **Tailscale** — Secure remote access VPN
+
+I may eventually migrate from Plex to Jellyfin, but for now Plex remains my primary media server solution.
 
 ---
 
@@ -232,20 +309,6 @@ SSH is available both from the local network and through Tailscale, allowing sec
 One of the first networking issues I encountered involved failed SSH connections. At first I assumed SSH itself was misconfigured, but after some troubleshooting I discovered that the Raspberry Pi had simply received a different IP address through DHCP.
 
 After implementing DHCP reservations, SSH access became consistent and reliable.
-
-## Lessons Learned
-
-Building the network infrastructure for this homelab taught me a few valuable lessons.
-
-The first is that even in a small environment, proper IP management matters. DHCP reservations can save a surprising amount of troubleshooting time.
-
-The second is that Ethernet is absolutely worth the effort. While Wi-Fi is convenient for testing and initial deployment, a wired connection provides the reliability that self-hosted services really need.
-
-The third lesson is that simplicity often beats complexity. While deploying a standalone WireGuard server would have been a great learning experience, Tailscale allowed me to achieve the same goal with significantly less maintenance and configuration overhead.
-
-Finally, I've learned that exposing fewer services publicly makes everything easier. Keeping management interfaces behind a VPN dramatically reduces the security concerns that come with running services from home.
-
-
 
 ---
 
@@ -491,50 +554,220 @@ By centralizing all persistent data under a single directory tree, the entire ho
 
 # Services
 
-Detailed configuration files and explanations for every hosted service.
-
----
-# Tailscale
-
----
-
-# Backups
-
-Backup infrastructure using:
-
-* Duplicati
-* encrypted backups
-* scheduled jobs
-* NAS backup targets
-
----
-
-# Home Assistant
-
-Smart home integration:
-
-* HomeKit
-* Matter
-* Alexa coexistence
-* smart devices
-* automations
-
----
-
-# Plex Media Server
-
-Media server setup and streaming configuration.
+For config files examples see docker compose files 
 
 ---
 
 # Security
 
-Documents:
+# Security
 
-* firewall rules
-* VPN-only access
-* exposed ports
-* secure practices
+Security has been one of the main considerations while building this homelab.
+
+The server itself is a Raspberry Pi housed in a Pironman case and located directly in my bedroom. While this is far from an enterprise environment, I still wanted to follow good security practices from the beginning and build a setup that is both secure and easy to manage.
+
+The overall philosophy is simple:
+
+```text
+Keep it simple.
+Expose as little as possible.
+Access everything through a VPN.
+```
+
+The goal isn't to build military-grade security, but rather to protect the services I use daily while learning about networking, self-hosting and system administration.
+
+---
+
+# Security Goals
+
+The primary security objectives are:
+
+- Secure remote access
+- Minimize public exposure
+- Protect administrative interfaces
+- Reduce the attack surface
+- Keep management simple and maintainable
+
+Rather than exposing multiple services directly to the Internet, the homelab is designed around private access whenever possible.
+
+---
+
+# Tailscale VPN
+
+One of the most important security decisions was adopting Tailscale as the primary remote access solution.
+
+Initially, I considered deploying a standalone WireGuard server, but this would have required:
+
+- Port forwarding
+- Dynamic DNS
+- Public endpoint management
+- Additional firewall configuration
+
+Tailscale provides WireGuard-based encryption while eliminating most of that complexity.
+
+Benefits include:
+
+- End-to-end encrypted connections
+- No exposed VPN ports
+- Automatic NAT traversal
+- Device-based authentication
+- Secure remote access from anywhere
+
+All administrative tasks are performed through Tailscale whenever possible.
+
+---
+
+# Firewall Strategy
+
+The router firewall remains enabled at all times.
+
+The goal is to allow only the traffic that is actually required while blocking unnecessary inbound connections.
+
+General principles:
+
+- Default deny through NAT
+- Minimize open ports
+- Restrict management interfaces
+- Prefer VPN access over public exposure
+
+This significantly reduces the risk of automated scans and brute-force attacks.
+
+---
+
+# Port Exposure
+
+Most services are intentionally kept private and are only accessible through:
+
+- Local Network (LAN)
+- Tailscale VPN
+
+Examples include:
+
+- SSH
+- SMB Shares
+- Docker management interfaces
+- Internal dashboards
+- Administrative panels
+
+Whenever a service requires public accessibility, only the specific required port is exposed.
+
+Every forwarded port should have a documented purpose and should be reviewed periodically.
+
+The general rule I follow is:
+
+```text
+If Tailscale can do it,
+don't expose it publicly.
+```
+
+---
+
+# SSH Security
+
+SSH is the primary management interface of the server.
+
+Typical connection:
+
+```bash
+ssh loyalty@192.168.1.61
+```
+
+SSH is not exposed directly to the Internet.
+
+Instead, access is performed through:
+
+```text
+Local Network
+or
+Tailscale VPN
+```
+
+This eliminates the majority of common SSH attacks.
+
+Future improvements may include:
+
+- Public key authentication
+- Disabling password authentication
+- Fail2Ban integration
+- SSH hardening
+
+---
+
+# Docker Isolation
+
+All services run inside Docker containers.
+
+Containerization provides a basic layer of isolation between applications and the host operating system.
+
+Benefits include:
+
+- Service separation
+- Easier recovery
+- Reduced dependency conflicts
+- Simplified updates
+- Cleaner management
+
+Persistent application data is stored outside containers using bind mounts.
+
+This allows containers to be recreated without losing data.
+
+---
+
+# Data Protection
+
+Application data is stored under:
+
+```text
+/mnt/SERVERDATA
+```
+
+This central storage structure simplifies:
+
+- Backups
+- Permission management
+- Recovery procedures
+- Future migrations
+
+Service configurations, databases and user data remain persistent even if containers are recreated.
+
+---
+
+# Backup Strategy
+
+Backups are managed through Duplicati.
+
+The backup system provides:
+
+- Automated backup jobs
+- Encryption support
+- Version history
+- Recovery capabilities
+
+Backup data is stored separately from application data whenever possible.
+
+This separation helps protect against accidental deletion and simplifies restoration procedures.
+
+---
+
+# Permission Management
+
+Ownership of persistent storage is assigned to the primary server user.
+
+Example:
+
+```bash
+sudo chown -R loyalty:loyalty /mnt/SERVERDATA
+```
+
+Docker containers use matching user and group identifiers:
+
+```yaml
+environment:
+  - PUID=1000
+  - PGID=1000
+```
+
+This prevents common permission issues between the host system and containers.
 
 ---
 
