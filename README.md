@@ -251,14 +251,110 @@ Finally, I've learned that exposing fewer services publicly makes everything eas
 
 # Docker Setup
 
-Contains:
+## Docker Compose
 
-* Docker installation
-* Docker Compose files
-* container management
-* networking
-* volumes and bind mounts
+All services are managed using Docker Compose.
 
+Each service has its own dedicated directory containing the compose file, configuration files, and any service-specific documentation.
+
+Current structure:
+
+```text
+/srv/docker
+├── duplicati
+├── homeassistant
+├── nextcloud
+└── plex
+```
+
+Each service can be deployed, updated, or removed independently without affecting the rest of the infrastructure.
+
+Current self-hosted services include:
+
+### Home Assistant
+
+Home Assistant is used as the central platform for home automation and smart device management.
+
+The container provides:
+
+- Device integration
+- Automation workflows
+- Smart home dashboards
+- Remote monitoring
+
+Running Home Assistant inside Docker makes upgrades and backups significantly easier compared to a traditional installation.
+
+### Plex
+
+Plex serves as the media management and streaming platform for the homelab.
+
+It is responsible for:
+
+- Organizing media libraries
+- Downloading metadata
+- Managing users
+- Streaming content across devices
+
+Docker allows Plex to access media storage while keeping the application isolated from the host operating system.
+
+### Nextcloud
+
+Nextcloud acts as the private cloud platform of the homelab.
+
+It is used for:
+
+- File synchronization
+- Remote file access
+- Personal cloud storage
+- Mobile device integration
+
+Running Nextcloud in Docker simplifies deployment and will make future migrations considerably easier.
+
+### Duplicati
+
+Duplicati is responsible for automated backups of critical data.
+
+It provides:
+
+- Scheduled backups
+- Encryption support
+- Versioned backups
+- Remote storage support
+
+Its configuration and database are stored on persistent volumes to survive container recreation.
+
+---
+
+### Common Docker Compose Commands
+
+Start a service:
+
+```bash
+docker compose up -d
+```
+
+Update a service:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+Stop a service:
+
+```bash
+docker compose down
+```
+
+Restart a service:
+
+```bash
+docker compose restart
+```
+
+Using Compose instead of manually managing containers provides a consistent deployment workflow and makes infrastructure management significantly easier.
+
+As additional services are added to the homelab, they will follow the same structure and deployment methodology.
 ---
 
 # Directory Structure
